@@ -29,6 +29,6 @@ predicted = k_means.predict(data)
 # plot the results
 print(predicted, predicted.shape)
 pl.scatter(reduced[:, 0], reduced[:, 1], c=predicted, s=75, marker='s')
-# pl.savefig('test') # save the plot as jpg
+#pl.savefig('plot.jpg')  # save the plot as jpg
 pl.show()
 
