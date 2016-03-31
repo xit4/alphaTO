@@ -7,7 +7,7 @@ import time
 
 # extract data from the CSV, skip the first row cause it does not contain actual data and skip the last 50000 lines to
 # reduce the number of rows the computation has to process
-csv = np.genfromtxt('../CSV/test3_permissions.csv', delimiter=',', skiprows=1, skip_footer=95000)
+csv = np.genfromtxt('../CSV/test3_permissionsmodified.csv', delimiter=',', skiprows=1, skip_footer=0)
 
 # remove the first column containing the SHAs which cannot be handled in a numpy array
 data = csv[:, 1:]
@@ -15,7 +15,7 @@ data = csv[:, 1:]
 
 # initialize the reduction models with n_components being the number of dimensions we want to reduce the data to
 pca = decomposition.PCA(n_components=2)
-tsne = manifold.TSNE(n_components=2)
+tsne = manifold.TSNE(n_components=2, random_state=1)
 
 # fit the model to the data
 # compute the actual reduction. Save elapsed times to compare solutions
@@ -23,10 +23,10 @@ start = time.time()
 pca_reduced = pca.fit_transform(data)
 end = time.time()
 print('execution time for PCA reduction', end-start)
-start = time.time()
-tsne_reduced = tsne.fit_transform(data)
-end = time.time()
-print('execution time for TSNE reduction', end-start)
+# start = time.time()
+# tsne_reduced = tsne.fit_transform(data)
+# end = time.time()
+# print('execution time for TSNE reduction', end-start)
 
 # ----------------------------
 # DBSCAN (uncomment as needed)
@@ -55,28 +55,28 @@ print('execution time for TSNE reduction', end-start)
 
 # --------------------------------------------
 # AgglomerativeClustering (uncomment as needed)
-# initialize the model asking for n_clusters
-agglomerativeclustering = cluster.AgglomerativeClustering(n_clusters=5)
-start = time.time()
-# fit the date and compute compute the clusters
-predicted = agglomerativeclustering.fit_predict(data)
-#print(predicted, predicted.shape)
-end = time.time()
-print('AgglomerativeClustering execution time without reduction', end-start)
-
-agglomerativeclustering = cluster.AgglomerativeClustering(n_clusters=5)
-start = time.time()
-# fit the date and compute compute the clusters
-predictedPCA = agglomerativeclustering.fit_predict(pca_reduced)
-end = time.time()
-print('AgglomerativeClustering execution time with PCA reduction', end-start)
-
-agglomerativeclustering = cluster.AgglomerativeClustering(n_clusters=5)
-start = time.time()
-# fit the date and compute compute the clusters
-predictedTSNE = agglomerativeclustering.fit_predict(tsne_reduced)
-end = time.time()
-print('AgglomerativeClustering execution time with TSNE reduction', end-start)
+# # initialize the model asking for n_clusters
+# agglomerativeclustering = cluster.AgglomerativeClustering(n_clusters=5)
+# start = time.time()
+# # fit the date and compute compute the clusters
+# predicted = agglomerativeclustering.fit_predict(data)
+# #print(predicted, predicted.shape)
+# end = time.time()
+# print('AgglomerativeClustering execution time without reduction', end-start)
+#
+# agglomerativeclustering = cluster.AgglomerativeClustering(n_clusters=5)
+# start = time.time()
+# # fit the date and compute compute the clusters
+# predictedPCA = agglomerativeclustering.fit_predict(pca_reduced)
+# end = time.time()
+# print('AgglomerativeClustering execution time with PCA reduction', end-start)
+#
+# agglomerativeclustering = cluster.AgglomerativeClustering(n_clusters=5)
+# start = time.time()
+# # fit the date and compute compute the clusters
+# predictedTSNE = agglomerativeclustering.fit_predict(tsne_reduced)
+# end = time.time()
+# print('AgglomerativeClustering execution time with TSNE reduction', end-start)
 
 # -----------------------------------------
 # AffinityPropagation (uncomment as needed)
@@ -105,16 +105,16 @@ print('AgglomerativeClustering execution time with TSNE reduction', end-start)
 
 
 # plot the results
-pl.scatter(tsne_reduced[:, 0], tsne_reduced[:, 1], c=predicted,
+# pl.scatter(tsne_reduced[:, 0], tsne_reduced[:, 1], #c=predicted,
+#            s=75,
+#            marker='s')
+# pl.show()
+pl.scatter(pca_reduced[:, 0], pca_reduced[:, 1], #c=predictedPCA,
            s=75,
            marker='s')
 pl.show()
-pl.scatter(pca_reduced[:, 0], pca_reduced[:, 1], c=predictedPCA,
-           s=75,
-           marker='s')
-pl.show()
-pl.scatter(tsne_reduced[:, 0], tsne_reduced[:, 1], c=predictedTSNE,
-           s=75,
-           marker='s')
-pl.show()
+# pl.scatter(tsne_reduced[:, 0], tsne_reduced[:, 1], c=predictedTSNE,
+#            s=75,
+#            marker='s')
+# pl.show()
 
