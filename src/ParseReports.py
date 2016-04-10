@@ -1,47 +1,74 @@
 import json
 import os
 import pandas as pd
-import io
+import numpy as np
+import time
 
 # here I use pandas to manipulate the reports
 
-stuff = 'domains,certificate\n'
+directory = '../Example Reports'
 
-for filename in os.listdir('../Example Reports'):
-    pathname = '../Example Reports/' + filename
+# we know we're gonna have numberOfRows rows of data
+numberOfRows = len([item for item in os.listdir(directory) if os.path.isfile(os.path.join(directory, item))])
+
+# columns we are interested in
+columnNames = ('sha', 'domains', 'certificate')
+# create DataFrame
+df = pd.DataFrame(index=range(0, numberOfRows), columns=columnNames)
+
+# initialize index counter
+i = 0
+# for each (report.json) file in the directory
+for filename in os.listdir(directory):
+    pathname = os.path.join(directory, filename)
+    if not os.path.isfile(pathname):
+        continue
+    # open it
     with open(pathname) as data_file:
+        # load the json data inside of it
         data = json.load(data_file)
-        domains = ''
+        # find the domains used by the app
+        dom = ''
         for domain in data['cuckoo']['network']['domains']:
-            domains += domain['domain']
-        if not domains: 
-            domains = 'NaN'
+            dom += domain['domain']
+        if not dom:
+            dom = 'NaN'
+        # save the domains in the DataFrame
+        df.set_value(i, 'domains', dom)
 
-        stuff += domains + ','
-        stuff += data['androguard']['certificate']['serial'] + '\n'
+        # save the certificate serial in the DataFrame
+        df.set_value(i, 'certificate', data['androguard']['certificate']['serial'])
 
+        # save the sha
+        df.set_value(i, 'sha', data['sha256'])
 
-# new_columns = pd.read_csv(io.StringIO(stuff), sep=',')
-new_columns = pd.read_csv('../CSV/niggga.csv', sep=',')
-# extract data from the CSV
-csv = pd.read_csv('../CSV/test3_permissionsmodified.csv', sep=',', skipfooter=0)
+        # find the permissions requested by the app
+        for permission in data['androguard']['permissions']:
+            # remove anything but the permission name
+            permission = ''.join(x for x in permission if x.isupper() or x == '_')
+            if permission not in df.columns:
+                df[permission] = pd.Series(np.zeros(numberOfRows, dtype=np.int8), index=df.index)
+            df.set_value(i, permission, 1)
 
-# drop the first column (sha)
-csv.drop(csv.columns[0], axis=1, inplace=True)
+    # update the counter
+    i += 1
+    # print a status message (mostly to keep ssh connection on... hopefully)
+    print('\r%.2f%% reports parsed ' % (i/numberOfRows*100), end='', flush=True)
 
-csv['domains'] = new_columns['domains']
-csv['certificate'] = new_columns['certificate']
+print('')
+start = time.time()
+removedColumns = 0
+threshold = 300
+# for each column check if the sum is lower than threshold, if so, delete said column from original data
+for columnName in df.columns.values:
+    if columnName in columnNames:
+        continue
+    rowsum = df[columnName].sum(axis=1)
+    if rowsum == 0 or rowsum < threshold:
+        df.drop(columnName, axis=1, inplace=True)
+        removedColumns += 1
+end = time.time()
+print('cleaning up the features took ', end-start)
 
-csv.to_csv('../CSV/OMG.csv', index=False)
-#
-# count = 0
-# # for each column check if the sum is equal to 0, if so, delete said column from original data
-# for name in csv.columns.values:
-#     rowsum = csv[name].sum(axis=1)
-#     if rowsum == 0 or rowsum < 70000:
-#         csv.drop(name, axis=1, inplace=True)
-#         count += 1
-# print(count)
-#
-# # write resulting csv to file
-# csv.to_csv('../CSV/test3_permissionsmodified.csv', index=False)
+# print the results in a CSV file
+df.to_csv('../CSV/parsed.csv', index=False)
