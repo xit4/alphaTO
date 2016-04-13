@@ -3,14 +3,14 @@ from sklearn import manifold, decomposition
 from sklearn import cluster
 import pylab as pl
 import time
+import pandas as pd
 
 
 # extract data from the CSV, skip the first row cause it does not contain actual data and skip the last 50000 lines to
 # reduce the number of rows the computation has to process
-csv = np.genfromtxt('../CSV/test3_permissionsmodified.csv', delimiter=',', skiprows=1, skip_footer=90000)
+df = pd.read_csv('../CSV/parsed.csv', sep=',', header=0, engine='python',  skipfooter=17000)
 
-# remove the first column containing the SHAs which cannot be handled in a numpy array
-data = csv[:, 1:]
+data = df[df.columns[2:]].values
 #print(data, '\n', data.shape)
 
 # initialize the reduction models with n_components being the number of dimensions we want to reduce the data to
@@ -30,28 +30,49 @@ print('execution time for TSNE reduction', end-start)
 
 # ----------------------------
 # DBSCAN (uncomment as needed)
-# initialize the model asking for n_clusters
 dbscan = cluster.DBSCAN()
 start = time.time()
 # fit the date and compute compute the clusters
 predicted = dbscan.fit_predict(data)
-#print(predicted, predicted.shape)
 end = time.time()
 print('DBSCAN execution time without reduction', end-start)
+#
+# dbscan = cluster.DBSCAN()
+# start = time.time()
+# # fit the date and compute compute the clusters
+# predictedPCA = dbscan.fit_predict(pca_reduced)
+# end = time.time()
+# print('DBSCAN execution time with PCA reduction', end-start)
+#
+# dbscan = cluster.DBSCAN()
+# start = time.time()
+# # fit the date and compute compute the clusters
+# predictedTSNE = dbscan.fit_predict(tsne_reduced)
+# end = time.time()
+# print('DBSCAN execution time with TSNE reduction', end-start)
 
-dbscan = cluster.DBSCAN()
-start = time.time()
-# fit the date and compute compute the clusters
-predictedPCA = dbscan.fit_predict(pca_reduced)
-end = time.time()
-print('DBSCAN execution time with PCA reduction', end-start)
-
-dbscan = cluster.DBSCAN()
-start = time.time()
-# fit the date and compute compute the clusters
-predictedTSNE = dbscan.fit_predict(tsne_reduced)
-end = time.time()
-print('DBSCAN execution time with TSNE reduction', end-start)
+# ----------------------------
+# KMeans (uncomment as needed)
+# kmeans = cluster.KMeans()
+# start = time.time()
+# # fit the date and compute compute the clusters
+# predicted = kmeans.fit_predict(data)
+# end = time.time()
+# print('KMeans execution time without reduction', end-start)
+#
+# kmeans = cluster.KMeans()
+# start = time.time()
+# # fit the date and compute compute the clusters
+# predictedPCA = kmeans.fit_predict(pca_reduced)
+# end = time.time()
+# print('KMeans execution time with PCA reduction', end-start)
+#
+# kmeans = cluster.KMeans()
+# start = time.time()
+# # fit the date and compute compute the clusters
+# predictedTSNE = kmeans.fit_predict(tsne_reduced)
+# end = time.time()
+# print('KMeans execution time with TSNE reduction', end-start)
 
 # --------------------------------------------
 # AgglomerativeClustering (uncomment as needed)
@@ -60,7 +81,6 @@ print('DBSCAN execution time with TSNE reduction', end-start)
 # start = time.time()
 # # fit the date and compute compute the clusters
 # predicted = agglomerativeclustering.fit_predict(data)
-# #print(predicted, predicted.shape)
 # end = time.time()
 # print('AgglomerativeClustering execution time without reduction', end-start)
 #
@@ -80,15 +100,13 @@ print('DBSCAN execution time with TSNE reduction', end-start)
 
 # -----------------------------------------
 # AffinityPropagation (uncomment as needed)
-# #initialize the model asking for n_clusters
 # affinitypropagation = cluster.AffinityPropagation()
 # start = time.time()
 # # fit the date and compute compute the clusters
 # predicted = affinitypropagation.fit_predict(data)
-# #print(predicted, predicted.shape)
 # end = time.time()
 # print('AffinityPropagation execution time without reduction', end-start)
-#
+
 # affinitypropagation = cluster.AffinityPropagation()
 # start = time.time()
 # # fit the date and compute compute the clusters
@@ -103,19 +121,24 @@ print('DBSCAN execution time with TSNE reduction', end-start)
 # end = time.time()
 # print('AffinityPropagation execution time with TSNE reduction', end-start)
 
-print(predicted[666],predicted[667] )
+
+df.insert(1, 'cluster', predicted)
+
+df.to_csv('../CSV/clusterized.csv', index=False)
 
 # plot the results
+# pl.scatter(pca_reduced[:, 0], pca_reduced[:, 1], c=predicted,
+#            s=75,
+#            marker='.')
+# pl.show()
+# pl.scatter(pca_reduced[:, 0], pca_reduced[:, 1], c=predictedPCA,
+#            s=75,
+#            marker='s')
+# pl.show()
 pl.scatter(tsne_reduced[:, 0], tsne_reduced[:, 1], c=predicted,
            s=75,
-           marker='s')
-pl.show()
-pl.scatter(pca_reduced[:, 0], pca_reduced[:, 1], c=predictedPCA,
-           s=75,
-           marker='s')
-pl.show()
-pl.scatter(tsne_reduced[:, 0], tsne_reduced[:, 1], c=predictedTSNE,
-           s=75,
-           marker='s')
+           marker='.')
+for i in range(0, len(pca_reduced)):
+    pl.text(tsne_reduced[i, 0], tsne_reduced[i, 1], str(predicted[i]), color="red", fontsize=12)
 pl.show()
 

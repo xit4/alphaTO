@@ -33,7 +33,8 @@ for filename in os.listdir(directory):
             for domain in data['cuckoo']['network']['domains']:
                 dom = str(domain['domain']).rpartition('.')[2]
                 if dom not in df.columns:
-                    df[dom] = pd.Series(np.zeros(numberOfRows, dtype=np.int8), index=df.index)
+                    # place in position 2 just to skip sha and certificate, making it easier to ignore them when needed
+                    df.insert(2, dom, pd.Series(np.zeros(numberOfRows, dtype=np.int8), index=df.index))
                 df.set_value(i, dom, 1)
 
         # save the domains as strings one after the other, uncomment as needed
