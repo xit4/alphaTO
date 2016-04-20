@@ -38,7 +38,7 @@ else:
                         if (os.path.isfile(os.path.join(inputdir, item)) and item.endswith('.json'))])
 
 # columns we are interested in
-columnNames = ('sha', 'name', 'package')
+columnNames = ('sha', 'name', 'package', 'certificate')
 # create DataFrame
 df = pd.DataFrame(index=range(0, numberOfRows), columns=columnNames)
 
@@ -74,6 +74,7 @@ for filename in (filesList if filesList else os.listdir(inputdir)):
         df.set_value(i, 'sha', data['sha256'])
         df.set_value(i, 'name', data['androguard']['app_name'])
         df.set_value(i, 'package', data['androguard']['package_name'])
+        df.set_value(i, 'certificate', data['androguard']['certificate']['serial'])
 
         # find the permissions requested by the app
         for permission in data['androguard']['permissions']:
