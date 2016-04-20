@@ -8,10 +8,13 @@ import pandas as pd
 
 # extract data from the CSV, skip the first row cause it does not contain actual data and skip the last 50000 lines to
 # reduce the number of rows the computation has to process
-df = pd.read_csv('../CSV/parsed.csv', sep=',', header=0, engine='python',  skipfooter=17000)
+df = pd.read_csv('../CSV/parsed.csv', sep=',', header=0, engine='python',  skipfooter=0)
 
-data = df[df.columns[2:]].values
-#print(data, '\n', data.shape)
+for index, row in df.iterrows():
+    if row['name'] == '成人快播':
+        df.drop(index, inplace=True)
+
+data = df[df.columns[4:]].values
 
 # initialize the reduction models with n_components being the number of dimensions we want to reduce the data to
 pca = decomposition.PCA(n_components=2)
@@ -30,12 +33,12 @@ print('execution time for TSNE reduction', end-start)
 
 # ----------------------------
 # DBSCAN (uncomment as needed)
-dbscan = cluster.DBSCAN()
-start = time.time()
-# fit the date and compute compute the clusters
-predicted = dbscan.fit_predict(data)
-end = time.time()
-print('DBSCAN execution time without reduction', end-start)
+# dbscan = cluster.DBSCAN()
+# start = time.time()
+# # fit the date and compute compute the clusters
+# predicted = dbscan.fit_predict(data)
+# end = time.time()
+# print('DBSCAN execution time without reduction', end-start)
 #
 # dbscan = cluster.DBSCAN()
 # start = time.time()
@@ -76,13 +79,13 @@ print('DBSCAN execution time without reduction', end-start)
 
 # --------------------------------------------
 # AgglomerativeClustering (uncomment as needed)
-# # initialize the model asking for n_clusters
-# agglomerativeclustering = cluster.AgglomerativeClustering(n_clusters=5)
-# start = time.time()
-# # fit the date and compute compute the clusters
-# predicted = agglomerativeclustering.fit_predict(data)
-# end = time.time()
-# print('AgglomerativeClustering execution time without reduction', end-start)
+# initialize the model asking for n_clusters
+agglomerativeclustering = cluster.AgglomerativeClustering(n_clusters=30)
+start = time.time()
+# fit the date and compute compute the clusters
+predicted = agglomerativeclustering.fit_predict(data)
+end = time.time()
+print('AgglomerativeClustering execution time without reduction', end-start)
 #
 # agglomerativeclustering = cluster.AgglomerativeClustering(n_clusters=5)
 # start = time.time()
@@ -137,8 +140,12 @@ df.to_csv('../CSV/clusterized.csv', index=False)
 # pl.show()
 pl.scatter(tsne_reduced[:, 0], tsne_reduced[:, 1], c=predicted,
            s=75,
-           marker='.')
+           marker='s')
+pl.show()
+pl.scatter(tsne_reduced[:, 0], tsne_reduced[:, 1], c=predicted,
+           s=75,
+           marker='s')
 for i in range(0, len(pca_reduced)):
-    pl.text(tsne_reduced[i, 0], tsne_reduced[i, 1], str(predicted[i]), color="red", fontsize=12)
+    pl.text(tsne_reduced[i, 0], tsne_reduced[i, 1], df[df.columns[2]].values[i])
 pl.show()
 

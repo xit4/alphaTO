@@ -3,25 +3,50 @@ import os
 import pandas as pd
 import numpy as np
 import time
+import argparse
 
 # here I use pandas to manipulate the reports
+parser = argparse.ArgumentParser()
+parser.add_argument('-i', '--inputdir', required=True, help='directory containing json files (/ at the end)')
+parser.add_argument('-f', '--filter', help='text file containing the names of the json files to be parsed (one file per line')
+parser.add_argument('-o', '--outputdir', help='the output directory the results will be stored in (/ at the end)')
 
-directory = '../Example Reports/reports'
+inputdir = ''
+outputdir = './'
+filterfile = ''
 
-# we know we're gonna have numberOfRows rows of data
-numberOfRows = len([item for item in os.listdir(directory) if os.path.isfile(os.path.join(directory, item))])
+args = parser.parse_args()
+
+inputdir = args.inputdir
+if args.outputdir:
+    outputdir = args.outputdir
+if args.filter:
+    filterfile = args.filter
+
+# find out how many samples we have
+numberOfRows = 0
+# use filter file if it is provided
+if filterfile:
+    filesList = list()
+    with open(filterfile, 'r') as f:
+        for line in f:
+            numberOfRows += 1
+            filesList.append(line[:-1])
+# otherwise count the json file in the input directory
+else:
+    numberOfRows = len([item for item in os.listdir(inputdir)
+                        if (os.path.isfile(os.path.join(inputdir, item)) and item.endswith('.json'))])
 
 # columns we are interested in
-columnNames = ('sha',  # 'domains', # uncomment when needed
-               'certificate')
+columnNames = ('sha', 'name', 'package')
 # create DataFrame
 df = pd.DataFrame(index=range(0, numberOfRows), columns=columnNames)
 
 # initialize index counter
 i = 0
 # for each (report.json) file in the directory
-for filename in os.listdir(directory):
-    pathname = os.path.join(directory, filename)
+for filename in (filesList if filesList else os.listdir(inputdir)):
+    pathname = os.path.join(inputdir, filename)
     if not os.path.isfile(pathname):
         continue
     # open it
@@ -33,8 +58,8 @@ for filename in os.listdir(directory):
             for domain in data['cuckoo']['network']['domains']:
                 dom = str(domain['domain']).rpartition('.')[2]
                 if dom not in df.columns:
-                    # place in position 2 just to skip sha and certificate, making it easier to ignore them when needed
-                    df.insert(2, dom, pd.Series(np.zeros(numberOfRows, dtype=np.int8), index=df.index))
+                    # place in position 3 just to skip sha and certificate, making it easier to ignore them when needed
+                    df.insert(len(columnNames), dom, pd.Series(np.zeros(numberOfRows, dtype=np.int8), index=df.index))
                 df.set_value(i, dom, 1)
 
         # save the domains as strings one after the other, uncomment as needed
@@ -45,10 +70,10 @@ for filename in os.listdir(directory):
         # # save the domains in the DataFrame
         # df.set_value(i, 'domains', dom)
 
-        # save the certificate serial in the DataFrame str(int(
-        df.set_value(i, 'certificate', int(data['androguard']['certificate']['serial'], 16))
         # save the sha
         df.set_value(i, 'sha', data['sha256'])
+        df.set_value(i, 'name', data['androguard']['app_name'])
+        df.set_value(i, 'package', data['androguard']['package_name'])
 
         # find the permissions requested by the app
         for permission in data['androguard']['permissions']:
@@ -79,4 +104,4 @@ end = time.time()
 print('cleaning up the features took {0:.2f}s'.format(end-start))
 
 # print the results in a CSV file
-df.to_csv('../CSV/parsed.csv', index=False)
+df.to_csv(outputdir+'parsed.csv', index=False)
