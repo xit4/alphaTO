@@ -1,6 +1,7 @@
 from sklearn import cluster
 import time
 import pandas as pd
+import numpy as np
 
 
 # read the rows from the CSV file. Skip some in skipfooter to reduce computational times/memory requirements
@@ -10,13 +11,13 @@ df = pd.read_csv('../CSV/parsedstats.csv', sep=',', header=0, engine='python',  
 data = df[df.columns[4:]].values
 
 # ----------------------------
-# DBSCAN (uncomment as needed)
-dbscan = cluster.DBSCAN()
+# Agglo (uncomment as needed)
+agglo = cluster.AgglomerativeClustering()
 start = time.time()
 # fit the date and compute compute the clusters
-predicted = dbscan.fit_predict(data)
+predicted = agglo.fit_predict(data)
 end = time.time()
-print('DBSCAN execution time ', end-start)
+print('AgglomerativeClustering execution time ', end-start)
 
 df.insert(1, 'cluster', predicted)
-df.to_csv('../CSV/clusterized.csv', index=False)
+df.to_csv('../CSV/Agglo100kstats.csv', index=False)

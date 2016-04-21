@@ -76,6 +76,7 @@ for filename in (filesList if filesList else os.listdir(inputdir)):
             df.set_value(i, 'domains', len(data['cuckoo']['network']['domains']))
             df.set_value(i, 'dns', len(data['cuckoo']['network']['dns']))
 
+
         if data['droidbox']:
             df.set_value(i, 'fileswritten', len(data['droidbox']['fileswritten']))
             df.set_value(i, 'cryptousage', len(data['droidbox']['cryptousage']))
@@ -105,6 +106,7 @@ for columnName in df.columns.values:
         df.drop(columnName, axis=1, inplace=True)
         removedColumns += 1
 end = time.time()
+df.fillna(value=0, inplace=True)
 print('cleaning up the features took {0:.2f}s'.format(end-start))
 print('removed {0} columns'.format(removedColumns))
 
