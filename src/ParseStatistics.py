@@ -5,7 +5,7 @@ import numpy as np
 import time
 import argparse
 
-# here I use pandas to parse the reports and print features in a CSV
+# here I use pandas to parse the reports and print statistics of them in a CSV
 parser = argparse.ArgumentParser()
 parser.add_argument('-i', '--inputdir', required=True, help='directory containing json files (/ at the end)')
 parser.add_argument('-f', '--filter', help='text file containing the names of the json files to be parsed (one file per line')
@@ -39,10 +39,14 @@ else:
                         if (os.path.isfile(os.path.join(inputdir, item)) and item.endswith('.json'))])
 
 # columns we are interested in
-columnNames = ('sha', 'name', 'package', 'certificate')
+columnNames = ('sha', 'name', 'package', 'certificate', 'filters', 'activities', 'receivers', 'services', 'permissions',
+               'http', 'hosts', 'domains', 'dns', 'fileswritten', 'cryptousage', 'filesread', 'sendsms', 'sendnet',
+               'recvnet')
 # create DataFrame
 df = pd.DataFrame(index=range(0, numberOfRows), columns=columnNames)
 
+
+start = time.time()
 # initialize index counter
 i = 0
 # for each (report.json) file in the directory
@@ -54,46 +58,44 @@ for filename in (filesList if filesList else os.listdir(inputdir)):
     with open(pathname) as data_file:
         # load the json data inside of it
         data = json.load(data_file)
-        # find the domains used by the app
+
+        if data['androguard']:
+            df.set_value(i, 'sha', data['sha256'])
+            df.set_value(i, 'name', data['androguard']['app_name'])
+            df.set_value(i, 'package', data['androguard']['package_name'])
+            df.set_value(i, 'certificate', data['androguard']['certificate']['serial'])
+            df.set_value(i, 'filters', len(data['androguard']['filters']))
+            df.set_value(i, 'activities', len(data['androguard']['activities']))
+            df.set_value(i, 'receivers', len(data['androguard']['receivers']))
+            df.set_value(i, 'services', len(data['androguard']['services']))
+            df.set_value(i, 'permissions', len(data['androguard']['permissions']))
+
         if data['cuckoo']:
-            for domain in data['cuckoo']['network']['domains']:
-                dom = str(domain['domain']).rpartition('.')[2]
-                if dom not in df.columns:
-                    # place in position 3 just to skip sha and certificate, making it easier to ignore them when needed
-                    df.insert(len(columnNames), dom, pd.Series(np.zeros(numberOfRows, dtype=np.int8), index=df.index))
-                df.set_value(i, dom, 1)
+            df.set_value(i, 'http', len(data['cuckoo']['network']['http']))
+            df.set_value(i, 'hosts', len(data['cuckoo']['network']['hosts']))
+            df.set_value(i, 'domains', len(data['cuckoo']['network']['domains']))
+            df.set_value(i, 'dns', len(data['cuckoo']['network']['dns']))
 
-        # save the domains as strings one after the other, uncomment as needed
-        # dom = ''
-        # if data['cuckoo']:
-        #     for domain in data['cuckoo']['network']['domains']:
-        #         dom += domain['domain']
-        # # save the domains in the DataFrame
-        # df.set_value(i, 'domains', dom)
-
-        # save the sha
-        df.set_value(i, 'sha', data['sha256'])
-        df.set_value(i, 'name', data['androguard']['app_name'])
-        df.set_value(i, 'package', data['androguard']['package_name'])
-        df.set_value(i, 'certificate', data['androguard']['certificate']['serial'])
-
-        # find the permissions requested by the app
-        for permission in data['androguard']['permissions']:
-            # remove anything but the permission name
-            permission = ''.join(x for x in permission if x.isupper() or x == '_')
-            if permission not in df.columns:
-                df[permission] = pd.Series(np.zeros(numberOfRows, dtype=np.int8), index=df.index)
-            df.set_value(i, permission, 1)
+        if data['droidbox']:
+            df.set_value(i, 'fileswritten', len(data['droidbox']['fileswritten']))
+            df.set_value(i, 'cryptousage', len(data['droidbox']['cryptousage']))
+            df.set_value(i, 'fileswritten', len(data['droidbox']['fileswritten']))
+            df.set_value(i, 'filesread', len(data['droidbox']['filesread']))
+            df.set_value(i, 'sendsms', len(data['droidbox']['sendsms']))
+            df.set_value(i, 'sendnet', len(data['droidbox']['sendnet']))
+            df.set_value(i, 'recvnet', len(data['droidbox']['recvnet']))
 
     # update the counter
     i += 1
     # print a status message (mostly to keep ssh connection on... hopefully)
     print('\r' + '{0:.2f}% reports parsed '.format(i/numberOfRows*100), end='', flush=True)
-
 print('')
+end = time.time()
+print('parsing {1} json took {0:.2f}s'.format(end-start, numberOfRows))
+
 start = time.time()
 removedColumns = 0
-threshold = 300
+threshold = 0
 # for each column check if the sum is lower than threshold, if so, delete said column from original data
 for columnName in df.columns.values:
     if columnName in columnNames:
@@ -107,4 +109,4 @@ print('cleaning up the features took {0:.2f}s'.format(end-start))
 print('removed {0} columns'.format(removedColumns))
 
 # print the results in a CSV file
-df.to_csv(outputdir+'parsed.csv', index=False)
+df.to_csv(outputdir+'parsedstats.csv', index=False)
