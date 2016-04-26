@@ -48,7 +48,7 @@ i = 0
 # for each (report.json) file in the directory
 for filename in (filesList if filesList else os.listdir(inputdir)):
     pathname = os.path.join(inputdir, filename)
-    if not os.path.isfile(pathname):
+    if not os.path.isfile(pathname) or not filename.endswith('.json'):
         continue
     # open it
     with open(pathname) as data_file:
