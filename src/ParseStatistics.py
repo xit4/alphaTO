@@ -9,18 +9,18 @@ import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument('-i', '--inputdir', required=True, help='directory containing json files (/ at the end)')
 parser.add_argument('-f', '--filter', help='text file containing the names of the json files to be parsed (one file per line')
-parser.add_argument('-o', '--outputdir', help='the output directory the results will be stored in (/ at the end)')
+parser.add_argument('-o', '--outputfile', help='the output file the results will be stored in')
 
 inputdir = ''
-outputdir = './'
+outputfile = './parsedstats.csv'
 filterfile = ''
 filesList = list()
 
 args = parser.parse_args()
 
 inputdir = args.inputdir
-if args.outputdir:
-    outputdir = args.outputdir
+if args.outputfile:
+    outputfile = args.outputfile
 if args.filter:
     filterfile = args.filter
 
@@ -111,4 +111,4 @@ print('cleaning up the features took {0:.2f}s'.format(end-start))
 print('removed {0} columns'.format(removedColumns))
 
 # print the results in a CSV file
-df.to_csv(outputdir+'parsedstats.csv', index=False)
+df.to_csv(outputfile, index=False)

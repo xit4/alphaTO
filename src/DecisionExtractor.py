@@ -37,12 +37,16 @@ df.insert(4, 'cluster', predicted)
 
 # extract the features and target labels to classify
 output = df.iloc[centroids]
-X = output[output.columns[5:]]
-Y = output[output.columns[4]]
+X = df[output.columns[5:]]
+Y = df[output.columns[4]]
 
 # create the tree model and the tree itself
-DTC = DecisionTreeClassifier(random_state=1, min_samples_leaf=2, max_depth=20)
+DTC = DecisionTreeClassifier(random_state=None, min_samples_leaf=2, max_depth=20)
 DTC = DTC.fit(X, Y)
+
+print('Least important feature', df.columns[5+DTC.feature_importances_.argmin()],
+      '\nMost important feature', df.columns[5+DTC.feature_importances_.argmax()])
+
 # create the dot file that represents the tree
 export_graphviz(DTC, out_file='../CSV/tree.dot', feature_names=df.columns.values[5:])
 
