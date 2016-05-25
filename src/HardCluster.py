@@ -67,7 +67,7 @@ for n_clusters in n_clusters_range:
 #         # fit the date and compute compute the clusters
 #         predicted = model.fit_predict(data)
 #         end = time.time()
-#         print('Spectral Clustering execution time ', end-start)
+#         print('DBSCAN execution time ', end-start)
 #         df.insert(1, 'cluster', predicted)
 #         df.to_csv(outputdir + '{0}eps{1}minsamples{2}.csv'.format(outputdir.split('/')[-1], eps, min_sample),
 #                   index=False)
