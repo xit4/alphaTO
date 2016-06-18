@@ -16,7 +16,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('-i', '--inputfile', required=True, help='CSV file containing the parsed information')
 parser.add_argument('-o', '--outputdir', default='./', help='the output directory where the results will be stored in '
                                                             '(/ at the end)')
-parser.add_argument('-c', '--cluster-number', default=200, help='Number of cluster to be fed as parameter to KMeans')
+parser.add_argument('-c', '--cluster-number', type=int, default=200, help='Number of cluster to be fed as parameter to KMeans')
 
 args = parser.parse_args()
 inputfile = args.inputfile
@@ -43,23 +43,22 @@ df.insert(4, 'cluster', predicted)
 cluster_count = df['cluster'].value_counts()
 
 tenth = n_clusters/10
-cutoff_value = int(tenth) if tenth > 10 else 10
-
-
-# plot the biggest clusters for each feature behavior over distance
-for feature in df.columns.values[5:]:
-    fig = plt.figure()
-    plt.title(feature + ' over distance')
-    plt.xlabel('distance from respective center')
-    plt.ylabel('number of ' + feature)
-
-    i = cutoff_value
-    for label, count in cluster_count.iteritems():
-        if i == 0:
-            break
-        i -= 1
-        ind = np.argsort(transformed[:, label])[::][:count]
-        plt.plot(transformed[ind, label], df[feature][ind], marker='o')
-    plt.show()
-    #avefig(outputdir + feature + '{0}'.format(n_clusters), dpi=125, pad_inches='tight')
+cutoff_value = 10 #int(tenth) if tenth > 10 else 10
+i = cutoff_value
+for label, count in cluster_count.iteritems():
+    fig = plt.figure(figsize=(24, 13.5))
+    if i == 0:
+        break
+    i -= 1
+    for feature in df.columns.values[5:]:
+        plt.title('features over distance in cluster ' + str(label) + ' (' + str(count) + ')')
+        plt.xlabel('distance from cluster center')
+        plt.ylabel('values for features')
+        single_cluster = df.loc[df['cluster'] == label]
+        ind = np.argsort(transformed[:, label])[:count]
+        plt.text(transformed[ind[0], label], df[feature][ind[0]]+0.1, feature)
+        plt.xlim([transformed[ind[0], label], transformed[ind[-1], label]])
+        plt.plot(transformed[ind, label], df[feature][ind], marker='o', label=feature)
+    plt.legend(loc='upper right' , bbox_to_anchor=(1.1, 1.05))
+    plt.savefig(outputdir + 'cluster{0}of{1}'.format(label, n_clusters), dpi=80, pad_inches='tight')
     plt.close(fig)
