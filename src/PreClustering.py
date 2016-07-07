@@ -30,7 +30,7 @@ inputdir = args.inputdir
 outputdir = args.outputdir
 tof = args.typeoffeature
 verbose = args.verbose
-n_clusters = args.preclusters
+n_clusters = int(args.preclusters)
 
 verboseprint = print if verbose else lambda *a, **k: None
 
@@ -66,23 +66,41 @@ kmeans = cluster.KMeans()
 n_clusters_range = range(2, 20)
 dbscan = cluster.DBSCAN()
 eps_range = np.arange(0.2, 3.2, 0.2)
+affinity = cluster.AffinityPropagation()
+damping_range = np.arange(0.5, 1.0, 0.1)
+ward = cluster.AgglomerativeClustering(linkage='ward')
+complete = cluster.AgglomerativeClustering(linkage='complete')
+average = cluster.AgglomerativeClustering(linkage='average')
 clustering_names = [
     "KMeans",
-    "DBSCAN"
+    # "DBSCAN",
+    # "Affinity",
+    # "Ward",
+    # "Complete",
+    # "Average"
 ]
 clustering_algorithms = [
     kmeans,
-    dbscan
+    # dbscan,
+    # affinity,
+    # ward,
+    # complete,
+    # average
 ]
 clustering_parameters = [
     n_clusters_range,
-    eps_range
+    # eps_range,
+    # damping_range,
+    # n_clusters_range,
+    # n_clusters_range,
+    # n_clusters_range
 ]
 
 for name, algorithm, parameter_range in zip(clustering_names, clustering_algorithms, clustering_parameters):
     max_predicted = 0
     precluster_counter = 0
     best_counter = 0
+    start = time.time()
     for df in df_range:
         data = df[dflbl.columns[6:]].values
 
@@ -96,16 +114,22 @@ for name, algorithm, parameter_range in zip(clustering_names, clustering_algorit
         if len(data) > parameter_range[-1]*2:
             verboseprint("Starting multiple {} instances on precluster #{} with {} sample(s)".format(name, precluster_counter, len(data)))
             for parameter in parameter_range:
-                # model = cluster.KMeans(n_clusters)#, n_init=100)
                 model = algorithm
                 if name == "KMeans":
                     algorithm.set_params(n_clusters=parameter, n_init=100)
                 elif name == "DBSCAN":
                     algorithm.set_params(eps=parameter)
-                start = time.time()
+                elif name == "Affinity":
+                    algorithm.set_params(damping=parameter)
+                elif name == "Ward":
+                    algorithm.set_params(n_clusters=parameter)
+                elif name == "Complete":
+                    algorithm.set_params(n_clusters=parameter)
+                elif name == "Average":
+                    algorithm.set_params(n_clusters=parameter)
                 # fit the date and compute compute the clusters
                 predicted = model.fit_predict(data)
-                end = time.time()
+
 
                 for x in predicted:
                     x += 1
@@ -151,8 +175,12 @@ for name, algorithm, parameter_range in zip(clustering_names, clustering_algorit
         # plt.show()
         # plt.savefig(outputdir + 'KMeansMetrics'.format(label, tof), dpi=80, pad_inches='tight')
         # plt.close(fig)
-
-    print('{} Preclustering ARI={:.2f}  Final ARI={:.2f}'.format(name, metrics.adjusted_rand_score(dflbl['label'].values, dflbl['preclusters'].values), metrics.adjusted_rand_score(dflbl['label'].values, dflbl['clusters'].values)))
+    end = time.time()
+    print('{} Preclustering ARI={:.2f}  Final ARI={:.2f} time={:.2f}s'.format(name,
+                                                                             metrics.adjusted_rand_score(dflbl['label'].values, dflbl['preclusters'].values),
+                                                                             metrics.adjusted_rand_score(dflbl['label'].values, dflbl['clusters'].values),
+                                                                             end-start
+                                                                             ))
     dflbl.to_csv(outputdir + 'PRECLUSTERING{}.csv'.format(name), index=False)
 
     # pca = decomposition.PCA(n_components=3)

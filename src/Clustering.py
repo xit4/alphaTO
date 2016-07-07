@@ -10,6 +10,7 @@ from sklearn import manifold
 import numpy as np
 import matplotlib
 from sklearn import metrics
+from sklearn.neighbors import kneighbors_graph
 
 # set plotting diplay to Agg when on server
 matplotlib.use('Agg')
@@ -35,7 +36,7 @@ start = time.time()
 # df23 = pd.read_csv(inputdir + 'parsed{}23.csv'.format(tof), sep=',', header=0, engine='python',  skipfooter=0)
 # df40 = pd.read_csv(inputdir + 'parsed{}40.csv'.format(tof), sep=',', header=0, engine='python',  skipfooter=0)
 # df60 = pd.read_csv(inputdir + 'parsed{}60.csv'.format(tof), sep=',', header=0, engine='python',  skipfooter=0)
-dflbl = pd.read_csv(inputdir + 'parsed{}Labels.csv'.format(tof), sep=',', header=0, engine='python',  skipfooter=0)
+dflbl = pd.read_csv(inputdir + 'parsed{}LabelsClean.csv'.format(tof), sep=',', header=0, engine='python',  skipfooter=0)
 end = time.time()
 print('Execution time for reading CSVs', end-start)
 
@@ -91,38 +92,48 @@ for data, label in data_range:
     # print('Execution time for TSNE ({}) reduction'.format(label), end-start)
 
     # KMEANS
-    ARI = []
-    AMI = []
-    Homogeneneity = []
-    Completeness = []
-
-    n_clusters_range = range(4, 40)
-    for n_clusters in n_clusters_range:
-        model = cluster.KMeans(n_clusters, n_init=50)
-        start = time.time()
-        # fit the date and compute compute the clusters
-        predicted = model.fit_predict(data)
-        end = time.time()
-        print('KMeans (n_clusters={}) Execution time '.format(n_clusters), end-start)
-
-        print("Adjusted Rand Index: {}".format(metrics.adjusted_rand_score(dflbl['label'].values, predicted)))
-        ARI.append(metrics.adjusted_rand_score(dflbl['label'].values, predicted))
-        print("Adjusted Mutual Information: {}".format(metrics.adjusted_mutual_info_score(dflbl['label'].values, predicted)))
-        AMI.append(metrics.adjusted_mutual_info_score(dflbl['label'].values, predicted))
-        print("Homogeneity: {}".format(metrics.homogeneity_score(dflbl['label'].values, predicted)))
-        Homogeneneity.append(metrics.homogeneity_score(dflbl['label'].values, predicted))
-        print("Completeness: {}".format(metrics.completeness_score(dflbl['label'].values, predicted)))
-        Completeness.append(metrics.completeness_score(dflbl['label'].values, predicted))
-
-        fig = plt.figure(figsize=(24, 13.5))
-        plt.xlim(n_clusters_range[0], n_clusters_range[-1])
-        plt.plot(n_clusters_range, ARI, label="ARI")
-        plt.plot(n_clusters_range, AMI, label="AMI")
-        plt.plot(n_clusters_range, Homogeneneity, label="Homogeneity")
-        plt.plot(n_clusters_range, Completeness, label="Completeness")
-        plt.legend()
-        plt.savefig(outputdir + 'KMeansMetrics'.format(label, tof), dpi=80, pad_inches='tight')
-        plt.close(fig)
+    # start = time.time()
+    # ARI = []
+    # AMI = []
+    # Homogeneneity = []
+    # Completeness = []
+    # v_score = []
+    #
+    # n_clusters_range = range(105, 130)
+    # for n_clusters in n_clusters_range:
+    #     model = cluster.KMeans(n_clusters)
+    #     # start = time.time()
+    #     # fit the date and compute compute the clusters
+    #     predicted = model.fit_predict(data)
+    #     # end = time.time()
+    #     print('KMeans (n_clusters={})'.format(n_clusters))
+    #
+    #     print("Adjusted Rand Index: {}".format(metrics.adjusted_rand_score(dflbl['label'].values, predicted)))
+    #     ARI.append(metrics.adjusted_rand_score(dflbl['label'].values, predicted))
+    #     # print("Adjusted Mutual Information: {}".format(metrics.adjusted_mutual_info_score(dflbl['label'].values, predicted)))
+    #     # AMI.append(metrics.adjusted_mutual_info_score(dflbl['label'].values, predicted))
+    #     # print("Homogeneity: {}".format(metrics.homogeneity_score(dflbl['label'].values, predicted)))
+    #     # Homogeneneity.append(metrics.homogeneity_score(dflbl['label'].values, predicted))
+    #     # print("Completeness: {}".format(metrics.completeness_score(dflbl['label'].values, predicted)))
+    #     # Completeness.append(metrics.completeness_score(dflbl['label'].values, predicted))
+    #     # print("V-Score: {}".format(metrics.v_measure_score(dflbl['label'].values, predicted)))
+    #     # v_score.append(metrics.v_measure_score(dflbl['label'].values, predicted))
+    #
+    # fig = plt.figure(figsize=(24, 13.5))
+    # plt.xlim(n_clusters_range[0], n_clusters_range[-1])
+    # plt.ylim(0.0, 1.0)
+    # plt.plot(n_clusters_range, ARI, label="ARI")
+    # # plt.plot(n_clusters_range, AMI, label="AMI")
+    # # plt.plot(n_clusters_range, Homogeneneity, label="Homogeneity")
+    # # plt.plot(n_clusters_range, Completeness, label="Completeness")
+    # # plt.plot(n_clusters_range, v_score, label="V-score")
+    #
+    # plt.legend()
+    # plt.savefig(outputdir + 'KMeansMetrics'.format(label, tof), dpi=80, pad_inches='tight')
+    # plt.close(fig)
+    #
+    # end = time.time()
+    # print('KMeans Execution time'.format(n_clusters), end-start)
 
     # SPECTRAL CLUSTERING
     # ARI = []
@@ -159,53 +170,56 @@ for data, label in data_range:
     # plt.close(fig)
 
     # AGGLOMERATIVE CLUSTERING
-    # ARI = []
-    # AMI = []
-    # Homogeneneity = []
-    # Completeness = []
-    #
-    # n_clusters_range = range(4, 40)
-    # for n_clusters in n_clusters_range:
-    #     model = cluster.AgglomerativeClustering(n_clusters)
-    #     start = time.time()
-    #     # fit the date and compute compute the clusters
-    #     predicted = model.fit_predict(data)
-    #     end = time.time()
-    #     print('AgglomerativeClustering (n_clusters={}) Execution time '.format(n_clusters), end-start)
-    #
-    #     print("Adjusted Rand Index: {}".format(metrics.adjusted_rand_score(dflbl['label'].values, predicted)))
-    #     ARI.append(metrics.adjusted_rand_score(dflbl['label'].values, predicted))
-    #     print("Adjusted Mutual Information: {}".format(metrics.adjusted_mutual_info_score(dflbl['label'].values, predicted)))
-    #     AMI.append(metrics.adjusted_mutual_info_score(dflbl['label'].values, predicted))
-    #     print("Homogeneity: {}".format(metrics.homogeneity_score(dflbl['label'].values, predicted)))
-    #     Homogeneneity.append(metrics.homogeneity_score(dflbl['label'].values, predicted))
-    #     print("Completeness: {}".format(metrics.completeness_score(dflbl['label'].values, predicted)))
-    #     Completeness.append(metrics.completeness_score(dflbl['label'].values, predicted))
-    #
-    # fig = plt.figure(figsize=(24, 13.5))
-    # plt.xlim(4, 40)
-    # plt.plot(n_clusters_range, ARI, label="ARI")
+    ARI = []
+    AMI = []
+    Homogeneneity = []
+    Completeness = []
+    knn_graph = kneighbors_graph(data, 30, include_self=False)
+    start = time.time()
+    n_clusters_range = range(4, 30)
+    for n_clusters in n_clusters_range:
+        model = cluster.AgglomerativeClustering(n_clusters, linkage="ward")
+        # start = time.time()
+        # fit the date and compute compute the clusters
+        predicted = model.fit_predict(data)
+        # end = time.time()
+        # print('AgglomerativeClustering (n_clusters={}) Execution time '.format(n_clusters), end-start)
+
+        print("Adjusted Rand Index: {}".format(metrics.adjusted_rand_score(dflbl['label'].values, predicted)))
+        ARI.append(metrics.adjusted_rand_score(dflbl['label'].values, predicted))
+        # print("Adjusted Mutual Information: {}".format(metrics.adjusted_mutual_info_score(dflbl['label'].values, predicted)))
+        # AMI.append(metrics.adjusted_mutual_info_score(dflbl['label'].values, predicted))
+        # print("Homogeneity: {}".format(metrics.homogeneity_score(dflbl['label'].values, predicted)))
+        # Homogeneneity.append(metrics.homogeneity_score(dflbl['label'].values, predicted))
+        # print("Completeness: {}".format(metrics.completeness_score(dflbl['label'].values, predicted)))
+        # Completeness.append(metrics.completeness_score(dflbl['label'].values, predicted))
+
+    end = time.time()
+    print('AgglomerativeClustering Execution time ', end-start)
+    fig = plt.figure(figsize=(24, 13.5))
+    plt.xlim(4, 40)
+    plt.plot(n_clusters_range, ARI, label="ARI")
     # plt.plot(n_clusters_range, AMI, label="AMI")
     # plt.plot(n_clusters_range, Homogeneneity, label="Homogeneity")
     # plt.plot(n_clusters_range, Completeness, label="Completeness")
-    # plt.legend()
-    # plt.savefig(outputdir + 'AgglomerativeClusteringMetrics'.format(label, tof), dpi=80, pad_inches='tight')
-    # plt.close(fig)
+    plt.legend()
+    plt.savefig(outputdir + 'AgglomerativeClusteringMetrics'.format(label, tof), dpi=80, pad_inches='tight')
+    plt.close(fig)
 
     # DBSCAN
     # ARI = []
     # AMI = []
     # Homogeneneity = []
     # Completeness = []
-    #
-    # eps_range = np.linspace(0.5, 2, num=15)
+    # start = time.time()
+    # eps_range = np.arange(0.1, 3, 0.2)
     # for eps in eps_range:
     #     model = cluster.DBSCAN(eps=eps)
-    #     start = time.time()
+    #     # start = time.time()
     #     # fit the date and compute compute the clusters
     #     predicted = model.fit_predict(data)
-    #     end = time.time()
-    #     print('DBSCAN (eps={}) Execution time '.format(eps), end-start)
+    #     # end = time.time()
+    #     # print('DBSCAN (eps={}) Execution time '.format(eps), end-start)
     #
     #     print("Adjusted Rand Index: {}".format(metrics.adjusted_rand_score(dflbl['label'].values, predicted)))
     #     ARI.append(metrics.adjusted_rand_score(dflbl['label'].values, predicted))
@@ -215,6 +229,9 @@ for data, label in data_range:
     #     Homogeneneity.append(metrics.homogeneity_score(dflbl['label'].values, predicted))
     #     print("Completeness: {}".format(metrics.completeness_score(dflbl['label'].values, predicted)))
     #     Completeness.append(metrics.completeness_score(dflbl['label'].values, predicted))
+    #
+    # end = time.time()
+    # print('DBSCAN Execution time ', end-start)
     #
     # fig = plt.figure(figsize=(24, 13.5))
     # plt.xlim(eps_range[0], eps_range[-1])
