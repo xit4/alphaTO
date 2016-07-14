@@ -9,7 +9,7 @@ import time
 # feed those centers to a decision tree
 # extract the rules of said decision tree
 
-df = pd.read_csv('../CSV/DBSCANstatseps3minsamples6.csv', sep=',', header=0, engine='python',  skipfooter=0)
+df = pd.read_csv('../CSV/PRECLUSTERINGComplete.csv', sep=',', header=0, engine='python',  skipfooter=0)
 
 # # skip sha, name, certificate and package
 # data = df[df.columns[4:]].values
@@ -37,8 +37,8 @@ df = pd.read_csv('../CSV/DBSCANstatseps3minsamples6.csv', sep=',', header=0, eng
 
 # extract the features and target labels to classify
 # output = df.iloc[centroids]
-X = df[df.columns[5:]]
-Y = df[df.columns[1]]
+X = df[df.columns[6:]]
+Y = df[df.columns[2]]
 
 # create the tree model and the tree itself
 DTC = DecisionTreeClassifier(random_state=None, max_depth=5)
@@ -48,7 +48,7 @@ print('Least important feature', df.columns[5+DTC.feature_importances_.argmin()]
       '\nMost important feature', df.columns[5+DTC.feature_importances_.argmax()])
 
 # create the dot file that represents the tree
-export_graphviz(DTC, out_file='../CSV/tree.dot', feature_names=df.columns.values[5:], filled=True, impurity=False)
+export_graphviz(DTC, out_file='../CSV/tree.dot', feature_names=df.columns.values[6:],max_depth=2, filled=True, impurity=False)
 
 
 
