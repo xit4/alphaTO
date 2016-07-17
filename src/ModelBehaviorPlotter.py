@@ -6,12 +6,12 @@ from sklearn import cluster
 import time
 from io import StringIO
 
+# Script used to plot the behaviour of a model when his parameters are changed
+# change model code and parameter ranges manually
+
 # set plotting diplay to Agg when on server
 #matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-
-# Open csv files containing features a clusters
-# build histograms out of those information
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-i', '--inputfile', required=True, help='CSV file containing the features')

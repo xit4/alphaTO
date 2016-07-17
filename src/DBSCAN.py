@@ -12,6 +12,8 @@ import matplotlib
 from sklearn import metrics
 from sklearn.neighbors import kneighbors_graph
 
+# Script to perform DBSCAN clustering on mutliple datasets with gridsearch on parameters
+
 # set plotting diplay to Agg when on server
 # matplotlib.use('Agg')
 
@@ -91,4 +93,4 @@ for data, label in data_range:
     plt.close(fig)
 
     # end = time.time()
-    # print('KMeans Execution time'.format(n_clusters), end-start)
+    # print('DBSCAN Execution time'.format(n_clusters), end-start)

@@ -9,8 +9,7 @@ import argparse
 #matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
-# Use an unsupervised model to create clusters
-# extract information from the clusters
+# Script plotting how statistical feature change within clusters
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-i', '--inputfile', required=True, help='CSV file containing the parsed information')

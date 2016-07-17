@@ -5,7 +5,7 @@ import numpy as np
 import time
 import argparse
 
-# here I use pandas to parse the reports and print statistics of them in a CSV
+# Script to get size information from json files
 parser = argparse.ArgumentParser()
 parser.add_argument('-i', '--inputdir', required=True, help='directory containing json files (/ at the end)')
 parser.add_argument('-o', '--outputfile', default='./parsedsize.csv', help='the output file the results will be stored in')

@@ -5,6 +5,7 @@ import pylab as pl
 import time
 import pandas as pd
 
+# First tests on scikit, not a really important script
 
 # extract data from the CSV, skip the first row cause it does not contain actual data and skip the last 50000 lines to
 # reduce the number of rows the computation has to process

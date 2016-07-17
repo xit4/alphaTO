@@ -11,32 +11,7 @@ import time
 
 df = pd.read_csv('../CSV/PRECLUSTERINGComplete.csv', sep=',', header=0, engine='python',  skipfooter=0)
 
-# # skip sha, name, certificate and package
-# data = df[df.columns[4:]].values
-#
-# model = cluster.KMeans(n_clusters=200, random_state=None)
-# start = time.time()
-# # fit the date and compute compute the clusters
-# predicted = model.fit_predict(data)
-# # transform the model to a distance based model
-# transformed = model.transform(data)
-# end = time.time()
-# print('Model execution time ', end-start)
-#
-# # extract the centers
-# centers = model.cluster_centers_
-#
-# # compute the 2 closest nodes to all cluster centers
-# centroids = []
-# for j in range(0, max(predicted)):
-#     ind = np.argsort(transformed[:, j])[::][:2]
-#     centroids.extend(ind)
-#
-# # insert the cluster column in the dataframe in order to ease future operations
-# df.insert(4, 'cluster', predicted)
-
-# extract the features and target labels to classify
-# output = df.iloc[centroids]
+# skip first columns not containing features
 X = df[df.columns[6:]]
 Y = df[df.columns[2]]
 

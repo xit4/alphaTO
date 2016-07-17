@@ -10,8 +10,10 @@ from sklearn import manifold
 import numpy as np
 import matplotlib
 
+# Script to generate plot for various visualization techniques
+
 # set plotting diplay to Agg when on server
-# matplotlib.use('Agg')
+matplotlib.use('Agg')
 
 import matplotlib.pyplot as plt
 

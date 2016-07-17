@@ -5,7 +5,7 @@ import numpy as np
 import time
 import argparse
 
-# here I use pandas to parse the reports and print statistics of them in a CSV
+# get labels from a csv file and generate a unique number for each of them
 parser = argparse.ArgumentParser()
 parser.add_argument('-i', '--inputfile', required=True)
 parser.add_argument('-o', '--outputfile', default='./parsedlabels.csv', help='the output file the results will be stored in')

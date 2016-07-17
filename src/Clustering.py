@@ -10,8 +10,9 @@ from sklearn import manifold
 import numpy as np
 import matplotlib
 from sklearn import metrics
-from sklearn.neighbors import kneighbors_graph
 
+# Script to perform clustering on mutliple datasets by means of multiple models
+# the modes have to be swapped in manually by uncommenting/commenting the right lines.
 # set plotting diplay to Agg when on server
 matplotlib.use('Agg')
 
@@ -56,14 +57,6 @@ for data, label in data_range:
     selector.fit_transform(data)
     print("Variance ({}): {}".format(label, selector.variances_))
 
-# # normalize the data for each feature
-# data23_norm = preprocessing.normalize(data23, axis=0)
-# data33_norm = preprocessing.normalize(data33, axis=0)
-# data40_norm = preprocessing.normalize(data40, axis=0)
-# data60_norm = preprocessing.normalize(data60, axis=0)
-# data100_norm = preprocessing.normalize(data100, axis=0)
-# data_range = [(data23_norm, '23k'), (data33_norm, '33k'), (data40_norm, '40k'), (data60_norm, '60k'), (data100_norm, '100k')]
-
 # scale the data for each feature
 # data23_scale = preprocessing.scale(data23)
 # data33_scale = preprocessing.scale(data33)
@@ -74,23 +67,6 @@ datalbl_scale = preprocessing.scale(datalbl)
 data_range = [(datalbl_scale, 'lbl')]#, (data33_scale, '33k'), (data23_scale, '23k'), (data40_scale, '40k'), (data60_scale, '60k'), (data100_scale, '100k')]
 
 for data, label in data_range:
-
-    # pca = decomposition.PCA(n_components=3)
-    # # # fit the model to the data
-    # # # compute the actual reduction. Save elapsed times to compare solutions
-    # start = time.time()
-    # pca_reduced = pca.fit_transform(data)
-    # end = time.time()
-    # print('Execution time for PCA ({}) reduction'.format(label), end-start)
-    #
-    # tsne = manifold.TSNE(n_components=3)
-    # # fit the model to the data
-    # # compute the actual reduction. Save elapsed times to compare solutions
-    # start = time.time()
-    # tsne_reduced = tsne.fit_transform(data[:10000, :])
-    # end = time.time()
-    # print('Execution time for TSNE ({}) reduction'.format(label), end-start)
-
     # KMEANS
     start = time.time()
     ARI = []

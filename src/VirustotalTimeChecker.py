@@ -3,6 +3,8 @@ import argparse
 import time
 import os
 
+# Script to get upload times from virustotal
+
 url = "https://www.virustotal.com/vtapi/v2/file/report"
 
 parser = argparse.ArgumentParser()
@@ -33,7 +35,7 @@ for i in range(0, top_bound, 4):
         break
 
     parameters = {"resource": file_list[i] + ', ' + file_list[i+1] + ', ' + file_list[i+2] + ', ' + file_list[i+3],
-                  "apikey": "bf91c26b3e19b30b62c0116047f8d4ab8bce355b245e0085ef3b4f115691e7cc"}
+                  "apikey": "REDACTED"} # insert API Key instead of REDACTED
     response = requests.post(url, parameters)
     json = response.json()
     for response in json:

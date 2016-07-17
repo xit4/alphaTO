@@ -3,7 +3,8 @@ import os
 import pandas as pd
 import argparse
 
-# here I use pandas to parse the reports and print features in a CSV
+# explore jsons to generate filters based on information contained in them
+
 parser = argparse.ArgumentParser()
 parser.add_argument('-i', '--inputdir', required=True, help='directory containing json files (/ at the end)')
 parser.add_argument('-o', '--outputdir', help='the output directory the results will be stored in (/ at the end)')

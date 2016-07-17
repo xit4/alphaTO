@@ -5,6 +5,8 @@ import time
 import matplotlib
 import argparse
 
+# Script plotting how statistical feature change within a specific cluster
+
 # set plotting diplay to Agg when on server
 #matplotlib.use('Agg')
 import matplotlib.pyplot as plt

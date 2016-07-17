@@ -12,6 +12,8 @@ import matplotlib
 from sklearn import metrics
 from sklearn.neighbors import kneighbors_graph
 
+# Script to perform KMeans clustering on mutliple datasets with gridsearch on parameters
+
 # set plotting diplay to Agg when on server
 matplotlib.use('Agg')
 

@@ -11,6 +11,8 @@ import numpy as np
 import matplotlib
 from sklearn import metrics
 
+# Script implementing preclustering for multiple models with the option to set a range for their main parameters
+
 # set plotting diplay to Agg when on server
 matplotlib.use('Agg')
 
